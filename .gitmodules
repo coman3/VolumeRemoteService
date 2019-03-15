@@ -1,0 +1,3 @@
+[submodule "AudioSwitcher"]
+	path = AudioSwitcher
+	url = https://github.com/coman3/AudioSwitcher
