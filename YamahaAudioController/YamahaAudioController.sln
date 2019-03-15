@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YamahaAudioService_Installe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YamahaAudioController", "YamahaAudioController\YamahaAudioController.csproj", "{07F23679-5A7E-4AF9-A4D5-77D83623EA46}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YamahaAudioController.Common", "YamahaAudioController.Common\YamahaAudioController.Common.csproj", "{21DB7029-2900-4968-96EF-9F727D4D7864}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\AudioSwitcher\AudioSwitcher.AudioApi\AudioSwitcher.AudioApi.projitems*{26373899-cb07-4ace-9ac2-1c19fdbedce3}*SharedItemsImports = 4
@@ -157,6 +159,26 @@ Global
 		{07F23679-5A7E-4AF9-A4D5-77D83623EA46}.Release|x64.Build.0 = Release|Any CPU
 		{07F23679-5A7E-4AF9-A4D5-77D83623EA46}.Release|x86.ActiveCfg = Release|Any CPU
 		{07F23679-5A7E-4AF9-A4D5-77D83623EA46}.Release|x86.Build.0 = Release|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Debug|ARM.Build.0 = Debug|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Debug|x64.Build.0 = Debug|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Debug|x86.Build.0 = Debug|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Release|ARM.ActiveCfg = Release|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Release|ARM.Build.0 = Release|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Release|ARM64.Build.0 = Release|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Release|x64.ActiveCfg = Release|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Release|x64.Build.0 = Release|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Release|x86.ActiveCfg = Release|Any CPU
+		{21DB7029-2900-4968-96EF-9F727D4D7864}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

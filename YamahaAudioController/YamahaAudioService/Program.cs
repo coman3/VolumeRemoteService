@@ -17,7 +17,7 @@ namespace YamahaAudioService
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[]
             {
-                new AudioService()
+                new YamahaAudioService()
             };
             ServiceBase.Run(ServicesToRun);
         }

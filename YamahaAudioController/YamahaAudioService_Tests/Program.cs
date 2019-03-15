@@ -26,10 +26,19 @@ namespace YamahaAudioService_Tests
         {
             Console.WriteLine(error);
         }
+        public static double Map(double value, double fromSource, double toSource, double fromTarget, double toTarget)
+        {
+            return (value - fromSource) / (toSource - fromSource) * (toTarget - fromTarget) + fromTarget;
+        }
 
         void IObserver<DeviceVolumeChangedArgs>.OnNext(DeviceVolumeChangedArgs value)
         {
             Console.WriteLine(value.Volume);
+            var audioDeviceVolume = Map(value.Volume, 0, 100, -80, -10);
+            audioDeviceVolume = Math.Round(audioDeviceVolume * 2, MidpointRounding.AwayFromZero) / 2;
+            var audioVolumeToBeSent = audioDeviceVolume * 10;
+            var contentToBeSent = $"<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Volume><Lvl><Val>{audioVolumeToBeSent}</Val><Exp>1</Exp><Unit>dB</Unit></Lvl></Volume></Main_Zone></YAMAHA_AV>";
+            Console.WriteLine(contentToBeSent);
         }
 
         private void Start()

@@ -1,6 +1,6 @@
 ﻿namespace YamahaAudioService
 {
-    partial class AudioService
+    partial class YamahaAudioService
     {
         /// <summary> 
         /// Required designer variable.

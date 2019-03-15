@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.6.0-rc2\lib\net45\NLog.dll</HintPath>
     </Reference>
@@ -54,11 +57,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AudioService.cs">
+    <Compile Include="CommandItem.cs" />
+    <Compile Include="ServiceState.cs" />
+    <Compile Include="ServiceStatus.cs" />
+    <Compile Include="Timer.cs" />
+    <Compile Include="YamahaAudioService.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="AudioService.Designer.cs">
-      <DependentUpon>AudioService.cs</DependentUpon>
+    <Compile Include="YamahaAudioService.Designer.cs">
+      <DependentUpon>YamahaAudioService.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="ProjectInstaller.cs">
@@ -86,6 +93,10 @@
     <ProjectReference Include="..\..\AudioSwitcher\AudioSwitcher.AudioApi.CoreAudio %28NET45%29\AudioSwitcher.AudioApi.CoreAudio %28NET45%29.csproj">
       <Project>{44a1f234-124f-4ce4-b66c-110bca8f6ed5}</Project>
       <Name>AudioSwitcher.AudioApi.CoreAudio %28NET45%29</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\YamahaAudioController.Common\YamahaAudioController.Common.csproj">
+      <Project>{21db7029-2900-4968-96ef-9f727d4d7864}</Project>
+      <Name>YamahaAudioController.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
