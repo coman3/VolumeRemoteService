@@ -15,10 +15,17 @@ namespace YamahaAudioService
     {
         public int Volume { get; set; }
 
-        public VolumeChangeCommandItem(int volume)
+        private static double Map(double value, double fromSource, double toSource, double fromTarget, double toTarget)
         {
-            Volume = volume;
-        }        
+            return (value - fromSource) / (toSource - fromSource) * (toTarget - fromTarget) + fromTarget;
+        }
+
+        public VolumeChangeCommandItem(double currentVolume, int min = -80, int max = -5)
+        {
+            var audioDeviceVolume = Map(currentVolume, 0, 100, min, max);
+            audioDeviceVolume = Math.Round(audioDeviceVolume * 2, MidpointRounding.AwayFromZero) / 2;
+            Volume = (int)(audioDeviceVolume * 10);
+        }      
 
         public string GetCommandContent()
         {
@@ -26,4 +33,56 @@ namespace YamahaAudioService
         }
 
     }
+
+    class LoadSceneCommandItem : CommandItem
+    {
+        public byte SceneNumber { get; set; }
+
+        public LoadSceneCommandItem(byte sceneNumber)
+        {
+            if (sceneNumber >= 5) throw new ArgumentOutOfRangeException(nameof(sceneNumber));
+            SceneNumber = sceneNumber;
+            
+        }
+
+        public string GetCommandContent()
+        {
+            return $"<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Scene><Scene_Load>Scene {SceneNumber}</Scene_Load></Scene></Main_Zone></YAMAHA_AV>";
+        }
+
+    }
+
+    class PowerChangeCommandItem : CommandItem
+    {
+        public bool PowerStatus { get; set; }
+
+        public PowerChangeCommandItem(bool powerStatus)
+        {
+            PowerStatus = powerStatus;
+        }
+
+        public string GetCommandContent()
+        {
+            return $"<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Power_Control><Power>{(PowerStatus ? "On" : "Standby")}</Power></Power_Control></Main_Zone></YAMAHA_AV>";
+        }
+
+    }
+
+    class MuteChangeCommandItem : CommandItem
+    {
+        public bool MuteStatus { get; set; }
+
+        public MuteChangeCommandItem(bool muteStatus)
+        {
+            MuteStatus = muteStatus;
+        }
+
+        public string GetCommandContent()
+        {
+            return $"<YAMAHA_AV cmd=\"PUT\"><Main_Zone><Volume><Mute>{(MuteStatus ? "On" : "Off")}</Mute></Volume></Main_Zone></YAMAHA_AV>";
+        }
+
+    }
 }
+
+//<YAMAHA_AV cmd="PUT"><Main_Zone><Volume><Mute>On</Mute></Volume></Main_Zone></YAMAHA_AV>

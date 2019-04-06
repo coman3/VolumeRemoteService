@@ -33,6 +33,7 @@ namespace YamahaAudioService_Installer
             Console.WriteLine("Installing Service...");
             ManageServiceInstall();
             Console.WriteLine("Finished! :)");
+            Console.ReadLine();
 
         }
 

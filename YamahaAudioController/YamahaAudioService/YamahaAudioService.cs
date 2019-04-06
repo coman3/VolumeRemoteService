@@ -18,10 +18,11 @@ using YamahaAudioController.Common;
 namespace YamahaAudioService
 {
 
-    partial class YamahaAudioService : ServiceBase, IObserver<DeviceVolumeChangedArgs>
+    partial class YamahaAudioService : ServiceBase, IObserver<DeviceVolumeChangedArgs>, IObserver<DeviceMuteChangedArgs>
     {
         [DllImport("advapi32.dll", SetLastError = true)]
         private static extern bool SetServiceStatus(System.IntPtr handle, ref ServiceStatus serviceStatus);
+
         private void SetServiceState(ServiceState state, int dwWaitHint = 0)
         {
             ServiceStatus serviceStatus = new ServiceStatus();
@@ -37,7 +38,7 @@ namespace YamahaAudioService
 
         public Config Config { get; private set; }
         public CustomTimer _requestTimer;
-        public Stack<CommandItem> CommandStack = new Stack<CommandItem>();
+        public List<CommandItem> CommandStack = new List<CommandItem>();
         
 
         public YamahaAudioService()
@@ -46,23 +47,86 @@ namespace YamahaAudioService
             InitializeLoger();
             _logger = LogManager.GetCurrentClassLogger();
             _controller = new CoreAudioController(false);
-            _requestTimer = new CustomTimer(150);
+            _requestTimer = new CustomTimer(25);
         }
 
         private async void _requestTimer_Elapsed(object state)
         {
             if (CommandStack.Count <= 0) return;
-            var command = CommandStack.Pop();
+            await PerformCommandStack();
+            _requestTimer.Stop();
+        }
+
+        private async Task PerformCommandStack()
+        {
+            CommandItem command = CommandStack.OfType<VolumeChangeCommandItem>().LastOrDefault();
             if (command is VolumeChangeCommandItem)
             {
-                var commandVolume = (VolumeChangeCommandItem)command;
+                try
+                {
+                    var commandVolume = (VolumeChangeCommandItem)command;
 
-                
-                var stringContent = new StringContent(commandVolume.GetCommandContent(), Encoding.UTF8, "text/xml");
-                _logger.Info("Sending volume change command ({1}): {0}", commandVolume.GetCommandContent(), commandVolume.Volume);
-                await client.PostAsync("http://10.0.0.91/YamahaRemoteControl/ctrl", stringContent);
+                    var stringContent = new StringContent(commandVolume.GetCommandContent(), Encoding.UTF8, "text/xml");
+                    _logger.Info("Sending volume change command ({1}): {0}", commandVolume.GetCommandContent(), commandVolume.Volume);
+                    await client.PostAsync("http://10.0.0.91/YamahaRemoteControl/ctrl", stringContent);
+                }
+                catch (Exception)
+                {
+                    _logger.Error("Sending volume change command Failed!");
+                }
+                CommandStack.RemoveAll(x => x is VolumeChangeCommandItem);
             }
-            CommandStack.Clear();
+            command = CommandStack.OfType<PowerChangeCommandItem>().LastOrDefault();
+            if (command is PowerChangeCommandItem)
+            {
+                try
+                {
+                    var commandPower = (PowerChangeCommandItem)command;
+
+                    var stringContent = new StringContent(commandPower.GetCommandContent(), Encoding.UTF8, "text/xml");
+                    _logger.Info("Sending power change command ({1}): {0}", commandPower.GetCommandContent(), commandPower.PowerStatus);
+                    await client.PostAsync("http://10.0.0.91/YamahaRemoteControl/ctrl", stringContent);
+                }
+                catch (Exception)
+                {
+                    _logger.Error("Sending power change command Failed!");
+                }
+                CommandStack.RemoveAll(x => x is PowerChangeCommandItem);
+            }
+            command = CommandStack.OfType<LoadSceneCommandItem>().LastOrDefault();
+            if (command is LoadSceneCommandItem)
+            {
+                try
+                {
+                    var commandScene = (LoadSceneCommandItem)command;
+
+                    var stringContent = new StringContent(commandScene.GetCommandContent(), Encoding.UTF8, "text/xml");
+                    _logger.Info("Sending scene change command ({1}): {0}", commandScene.GetCommandContent(), commandScene.SceneNumber);
+                    await client.PostAsync("http://10.0.0.91/YamahaRemoteControl/ctrl", stringContent);
+                }
+                catch (Exception)
+                {
+                    _logger.Error("Sending scene change command Failed!");
+                }
+                CommandStack.RemoveAll(x => x is LoadSceneCommandItem);
+            }
+            command = CommandStack.OfType<MuteChangeCommandItem>().LastOrDefault();
+            if (command is MuteChangeCommandItem)
+            {
+                try
+                {
+                    var commandMute = (MuteChangeCommandItem)command;
+
+                    var stringContent = new StringContent(commandMute.GetCommandContent(), Encoding.UTF8, "text/xml");
+                    _logger.Info("Sending mute change command ({1}): {0}", commandMute.GetCommandContent(), commandMute.MuteStatus);
+                    await client.PostAsync("http://10.0.0.91/YamahaRemoteControl/ctrl", stringContent);
+                }
+                catch (Exception)
+                {
+                    _logger.Error("Sending mute change command Failed!");
+                }
+                CommandStack.RemoveAll(x => x is MuteChangeCommandItem);
+            }
         }
 
         private void InitializeLoger()
@@ -83,7 +147,6 @@ namespace YamahaAudioService
         protected override void OnStart(string[] args)
         {
             SetServiceState(ServiceState.SERVICE_START_PENDING, 100000);
-            // TODO: Add code here to start your service.
             _logger.Info("Service Started.");
 
 
@@ -96,10 +159,18 @@ namespace YamahaAudioService
             _selectedDevice.ReloadAudioEndpointVolume();
 
             _selectedDevice.VolumeChanged.Subscribe(this);
+            _selectedDevice.MuteChanged.Subscribe(this);
 
             _logger.Info("Selected Default Audio Device ({0}) for volume tracking.", _selectedDevice.FullName);
             _requestTimer.OnTimer = _requestTimer_Elapsed;
-
+            
+            CommandStack.Add(new PowerChangeCommandItem(true));
+            CommandStack.Add(new LoadSceneCommandItem(3));
+            PerformCommandStack().Wait();
+            var volumeTask = _selectedDevice.GetVolumeAsync();
+            volumeTask.Wait();
+            CommandStack.Add(new VolumeChangeCommandItem(volumeTask.Result));
+            PerformCommandStack().Wait();
             SetServiceState(ServiceState.SERVICE_RUNNING);
 
         }
@@ -107,9 +178,12 @@ namespace YamahaAudioService
         protected override void OnStop()
         {
             SetServiceState(ServiceState.SERVICE_STOP_PENDING, 100000);
-            // TODO: Add code here to perform any tear-down necessary to stop your service.
+
+            CommandStack.Add(new PowerChangeCommandItem(false));
+            PerformCommandStack().Wait();
             _logger.Info("Service Stopped.");
             _controller.Dispose();
+
             SetServiceState(ServiceState.SERVICE_STOPPED);
         }
 
@@ -132,22 +206,12 @@ namespace YamahaAudioService
 
         }
 
-        public static double Map(double value, double fromSource, double toSource, double fromTarget, double toTarget)
-        {
-            return (value - fromSource) / (toSource - fromSource) * (toTarget - fromTarget) + fromTarget;
-        }
-
         void IObserver<DeviceVolumeChangedArgs>.OnNext(DeviceVolumeChangedArgs value)
         {
-            var audioDeviceVolume = Map(value.Volume, 0, 100, -80, -10);
-            audioDeviceVolume = Math.Round(audioDeviceVolume * 2, MidpointRounding.AwayFromZero) / 2;
-            var audioVolumeToBeSent = audioDeviceVolume * 10;
-            var command = new VolumeChangeCommandItem((int)audioVolumeToBeSent);
-            CommandStack.Push(command);
-
+            CommandStack.Add(new VolumeChangeCommandItem(value.Volume));
             // Restart Debounce Timer
             if (_requestTimer.Enabled) _requestTimer.Stop();
-            _requestTimer.Start();
+                _requestTimer.Start();
         }
 
         void IObserver<DeviceVolumeChangedArgs>.OnError(Exception error)
@@ -156,6 +220,22 @@ namespace YamahaAudioService
         }
 
         void IObserver<DeviceVolumeChangedArgs>.OnCompleted()
+        {
+
+        }
+
+        void IObserver<DeviceMuteChangedArgs>.OnNext(DeviceMuteChangedArgs value)
+        {
+            CommandStack.Add(new MuteChangeCommandItem(value.IsMuted));
+            PerformCommandStack().Wait();
+        }
+
+        void IObserver<DeviceMuteChangedArgs>.OnError(Exception error)
+        {
+
+        }
+
+        void IObserver<DeviceMuteChangedArgs>.OnCompleted()
         {
 
         }
